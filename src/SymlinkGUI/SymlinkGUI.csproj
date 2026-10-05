@@ -11,10 +11,10 @@
     <Platforms>x86;x64;ARM64</Platforms>
     <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
 
-    <!-- WinUI 3, unpackaged, with the Windows App SDK runtime bundled (no separate runtime install needed). -->
+    <!-- WinUI 3, unpackaged, framework-dependent Windows App SDK runtime. -->
     <UseWinUI>true</UseWinUI>
     <WindowsPackageType>None</WindowsPackageType>
-    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <WindowsAppSDKSelfContained>false</WindowsAppSDKSelfContained>
     <EnableMsixTooling>true</EnableMsixTooling>
 
     <!-- We provide our own Main (Program.cs) so context-menu verbs can run without starting XAML. -->
@@ -26,11 +26,15 @@
     <Platform>x64</Platform>
   </PropertyGroup>
   <PropertyGroup Condition="'$(RuntimeIdentifier)' == ''">
-    <RuntimeIdentifier>win-$(Platform.ToLowerInvariant())</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'AnyCPU' Or '$(Platform)' == ''">win-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(Platform)' != 'AnyCPU' And '$(Platform)' != ''">win-$(Platform.ToLowerInvariant())</RuntimeIdentifier>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.5.1" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.AI" Version="2.5.5" ExcludeAssets="all" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.ML" Version="2.1.94" ExcludeAssets="all" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Windows.AI.MachineLearning" Version="2.1.74" ExcludeAssets="all" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.2705" />
   </ItemGroup>
 

@@ -57,6 +57,17 @@ Or run the built executable directly:
 .\src\SymlinkGUI\bin\x64\Debug\net10.0-windows10.0.19041.0\win-x64\SymlinkGUI.exe
 ```
 
+### 4. Build a portable release (Folder / ZIP)
+To build a lightweight portable folder and `.zip` archive:
+```powershell
+powershell -ExecutionPolicy Bypass -File .\build-portable.ps1
+```
+The output will be placed in:
+- `dist\SymlinkGUI-Portable-win-x64\` (portable distribution folder ready to run via `SymlinkGUI.exe`)
+- `dist\SymlinkGUI-Portable-win-x64.zip` (compressed archive, ~9.7 MB)
+
+*Note: Since the .NET runtime and Windows App SDK are unbundled to keep the package lightweight, the target PC will require the [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/) and [Windows App SDK Runtime](https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/downloads).*
+
 ---
 
 ## Command Line Usage
