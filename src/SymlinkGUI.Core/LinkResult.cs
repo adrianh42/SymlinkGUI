@@ -49,7 +49,7 @@ public sealed record LinkResult(string SourcePath, string LinkPath, LinkError Er
         LinkError.DestinationNotFound => "The destination folder does not exist.",
         LinkError.AlreadyExists => "A file or folder with that name already exists at the destination.",
         LinkError.InvalidName => "The link name contains invalid characters.",
-        LinkError.PrivilegeRequired => "Creating symbolic links requires administrator rights or Windows Developer Mode.",
+        LinkError.PrivilegeRequired => "Creating symbolic links requires administrator rights.",
         LinkError.AccessDenied => "Access denied. You may not have permission to write to the destination folder.",
         LinkError.NotSupportedByFileSystem => "The destination drive's file system does not support symbolic links (e.g. FAT32/exFAT).",
         LinkError.NotSupportedForSource => "This link type is not supported for the selected source.",

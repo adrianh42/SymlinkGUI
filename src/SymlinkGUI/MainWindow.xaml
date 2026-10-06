@@ -152,15 +152,12 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <FontIcon Glyph="&#xEC7A;" FontSize="20" VerticalAlignment="Center" />
+                        <FontIcon Glyph="&#xEA18;" FontSize="20" VerticalAlignment="Center" />
                         <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
-                            <TextBlock x:Name="DevModeTitle" Text="Developer Mode" />
-                            <TextBlock x:Name="DevModeDescription" Style="{StaticResource CardDescriptionStyle}" />
+                            <TextBlock x:Name="ElevationTitle" Text="Administrator permission" />
+                            <TextBlock x:Name="ElevationDescription" Style="{StaticResource CardDescriptionStyle}" />
                         </StackPanel>
-                        <HyperlinkButton Grid.Column="2" Content="Open settings" Click="OpenDeveloperSettings_Click"
-                                         VerticalAlignment="Center" />
                     </Grid>
                 </Border>
             </StackPanel>

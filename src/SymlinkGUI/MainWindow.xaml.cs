@@ -37,7 +37,7 @@ public sealed partial class MainWindow : Window
         StatusBar.CloseButtonClick += (_, _) => StatusBar.IsOpen = false;
         Activated += (_, e) =>
         {
-            // Re-check when the user returns (e.g. after toggling Developer Mode in Settings).
+            // Re-check when the user returns.
             if (e.WindowActivationState != WindowActivationState.Deactivated)
                 RefreshEnvironment();
         };
@@ -74,7 +74,7 @@ public sealed partial class MainWindow : Window
 
     #endregion
 
-    #region Environment (context menu + developer mode)
+    #region Environment (context menu + permissions)
 
     private void RefreshEnvironment()
     {
@@ -83,16 +83,17 @@ public sealed partial class MainWindow : Window
         _updatingToggle = false;
         StaleMenuBar.IsOpen = _registrar.IsStale;
 
-        bool devMode = Elevation.IsDeveloperModeEnabled;
+        bool requiresElevation = _service.RequiresElevation(CurrentType);
         bool admin = Elevation.IsAdministrator;
-        DevModeTitle.Text = devMode ? "Developer Mode is on" : "Developer Mode is off";
-        DevModeDescription.Text = devMode
-            ? "Symbolic links can be created without administrator permission."
-            : admin
-                ? "Running as administrator, so links can be created now. Turn on Developer Mode to create links without elevation."
-                : "Windows will ask for administrator permission each time. Turn on Developer Mode to create links without a UAC prompt.";
 
-        ShieldIcon.Visibility = _service.RequiresElevation(CurrentType) ? Visibility.Visible : Visibility.Collapsed;
+        ElevationTitle.Text = admin ? "Running as administrator" : "Administrator permission";
+        ElevationDescription.Text = requiresElevation
+            ? "Creating symbolic links requires administrator permission. Windows will show a UAC prompt when creating links."
+            : admin
+                ? "Running as administrator. Links can be created without additional UAC prompts."
+                : "Links can be created without an elevation prompt.";
+
+        ShieldIcon.Visibility = requiresElevation ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void ContextMenuToggle_Toggled(object sender, RoutedEventArgs e)
@@ -115,9 +116,6 @@ public sealed partial class MainWindow : Window
         _registrar.Install();
         RefreshEnvironment();
     }
-
-    private void OpenDeveloperSettings_Click(object sender, RoutedEventArgs e) =>
-        Process.Start(new ProcessStartInfo("ms-settings:developers") { UseShellExecute = true });
 
     #endregion
 
@@ -358,13 +356,7 @@ public sealed partial class MainWindow : Window
             return;
         }
 
-        Button? action = null;
-        if (result.Error == LinkError.PrivilegeRequired)
-        {
-            action = new Button { Content = "Developer settings" };
-            action.Click += OpenDeveloperSettings_Click;
-        }
-        ShowStatus(InfoBarSeverity.Error, "Couldn't create the link", result.Message, action);
+        ShowStatus(InfoBarSeverity.Error, "Couldn't create the link", result.Message);
     }
 
     private static void ShowInExplorer(string? path)
