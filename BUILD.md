@@ -8,7 +8,7 @@ This guide provides instructions on how to build, test, run, and package **Symli
 
 - **Operating System**: Windows 10 (version 1809 / build 17763 or newer) or Windows 11.
 - **SDK**: [.NET 10 SDK](https://dotnet.microsoft.com/) or newer.
-- **Workloads / SDKs**: [Windows App SDK](https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/downloads) components (included automatically via NuGet packages in the project).
+- **Runtimes**: Standard [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/). No Windows App SDK is required.
 
 ---
 
@@ -42,7 +42,7 @@ dotnet run --project src/SymlinkGUI
 ### Direct Executable Execution
 After building in Debug configuration:
 ```powershell
-.\src\SymlinkGUI\bin\x64\Debug\net10.0-windows10.0.19041.0\win-x64\SymlinkGUI.exe
+.\src\SymlinkGUI\bin\Debug\net10.0-windows\SymlinkGUI.exe
 ```
 
 ---
@@ -57,10 +57,8 @@ powershell -ExecutionPolicy Bypass -File .\build-portable.ps1
 
 ### Outputs
 The build script outputs the artifacts into the `dist/` directory:
-- `dist\SymlinkGUI-Portable-win-x64\` — Portable directory ready to run via `SymlinkGUI.exe`.
-- `dist\SymlinkGUI-Portable-win-x64.zip` — Compressed portable package (~9.7 MB).
+- `dist\SymlinkGUI-Portable-win-x64\` — Portable directory ready to run via `SymlinkGUI.exe` (~0.23 MB).
+- `dist\SymlinkGUI-Portable-win-x64.zip` — Compressed portable package (~100 KB).
 
 > [!NOTE]
-> To keep the download package lightweight, the .NET runtime and Windows App SDK are unbundled. Users running the portable build will need:
-> - [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/)
-> - [Windows App SDK Runtime](https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/downloads)
+> Unlike the WinUI 3 edition, this Windows Forms edition does **not** require the Windows App SDK runtime. Users only need the standard [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/).
