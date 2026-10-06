@@ -57,8 +57,8 @@ powershell -ExecutionPolicy Bypass -File .\build-portable.ps1
 
 ### Outputs
 The build script outputs the artifacts into the `dist/` directory:
-- `dist\SymlinkGUI-Portable-win-x64\` — Portable directory ready to run via `SymlinkGUI.exe` (~0.23 MB).
-- `dist\SymlinkGUI-Portable-win-x64.zip` — Compressed portable package (~100 KB).
+- `dist\SymlinkGUI-WF-Portable-win-x64\` — Portable directory ready to run via `SymlinkGUI.exe` (~0.23 MB).
+- `dist\SymlinkGUI-WF-Portable-win-x64.zip` — Compressed portable package (~100 KB).
 
 > [!NOTE]
 > Unlike the WinUI 3 edition, this Windows Forms edition does **not** require the Windows App SDK runtime. Users only need the standard [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/).

@@ -1,15 +1,16 @@
 param(
     [ValidateSet("win-x64", "win-arm64")]
     [string]$Runtime = "win-x64",
-    [string]$OutputDir = "./dist"
+    [string]$OutputDir = "./dist",
+    [string]$PackagePrefix = "SymlinkGUI-WF"
 )
 
 $ErrorActionPreference = "Stop"
 
-$portableDir = Join-Path $OutputDir "SymlinkGUI-Portable-$Runtime"
-$zipPath = Join-Path $OutputDir "SymlinkGUI-Portable-$Runtime.zip"
+$portableDir = Join-Path $OutputDir "$PackagePrefix-Portable-$Runtime"
+$zipPath = Join-Path $OutputDir "$PackagePrefix-Portable-$Runtime.zip"
 
-Write-Host "Building portable package for $Runtime (framework-dependent)..." -ForegroundColor Cyan
+Write-Host "Building portable package for $Runtime ($PackagePrefix)..." -ForegroundColor Cyan
 
 # Ensure clean staging directory
 if (Test-Path $portableDir) {

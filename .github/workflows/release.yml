@@ -33,6 +33,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            dist/SymlinkGUI-Portable-win-x64.zip
-            dist/SymlinkGUI-Portable-win-arm64.zip
+            dist/SymlinkGUI-WF-Portable-win-x64.zip
+            dist/SymlinkGUI-WF-Portable-win-arm64.zip
           generate_release_notes: true
