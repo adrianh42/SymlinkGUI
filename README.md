@@ -88,6 +88,12 @@ Symlink GUI includes a built-in CLI router for automation and shell integration:
 
 ---
 
+## Privacy Policy
+
+Symlink GUI operates entirely offline and does not collect or transmit any telemetry or personal data. See [PRIVACY.md](PRIVACY.md) for full details.
+
+---
+
 ## License
 
 This project is licensed under the **GNU General Public License v3.0** (GPLv3). See the [LICENSE](LICENSE) file for details.
