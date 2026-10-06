@@ -85,3 +85,10 @@ Symlink GUI includes a built-in CLI router for automation and shell integration:
 | `SymlinkGUI.exe --drop symlink "<destFolder>"` | Creates symbolic links for all picked items inside `<destFolder>`. |
 | `SymlinkGUI.exe --install` | Registers Explorer context menu verbs under `HKCU\Software\Classes`. |
 | `SymlinkGUI.exe --uninstall` | Removes all context menu verbs. |
+
+---
+
+## License
+
+This project is licensed under the **GNU General Public License v3.0** (GPLv3). See the [LICENSE](LICENSE) file for details.
+
