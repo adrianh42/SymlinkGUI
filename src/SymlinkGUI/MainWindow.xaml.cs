@@ -15,7 +15,6 @@ namespace SymlinkGUI;
 public sealed partial class MainWindow : Window
 {
     private LinkType _selectedType = LinkType.SymbolicLink;
-    private bool _updatingRadioSelection;
 
     private readonly LinkService _service = LinkService.Default;
     private readonly ContextMenuRegistrar _registrar = ContextMenuRegistrar.CreateDefault();
@@ -33,7 +32,7 @@ public sealed partial class MainWindow : Window
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(AppTitleBar);
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
-        SizeAndCenter(640, 820);
+        SizeAndCenter(640, 720);
 
         StatusBar.CloseButtonClick += (_, _) => StatusBar.IsOpen = false;
         Activated += (_, e) =>
@@ -43,7 +42,7 @@ public sealed partial class MainWindow : Window
                 RefreshEnvironment();
         };
 
-        UpdateLinkTypeDescription();
+        UpdateLinkTypeControls();
         RefreshEnvironment();
         Validate();
     }
@@ -78,23 +77,21 @@ public sealed partial class MainWindow : Window
 
     #region Environment (context menu + permissions)
 
-    private void LinkType_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private void LinkTypeCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (_updatingRadioSelection) return;
-
-        _selectedType = LinkTypeRadioButtons.SelectedIndex switch
+        _selectedType = LinkTypeCombo.SelectedIndex switch
         {
             1 => LinkType.Junction,
             2 => LinkType.HardLink,
             _ => LinkType.SymbolicLink,
         };
 
-        UpdateLinkTypeDescription();
+        UpdateLinkTypeControls();
         RefreshEnvironment();
         Validate();
     }
 
-    private void UpdateLinkTypeDescription()
+    private void UpdateLinkTypeControls()
     {
         if (LinkTypeDescriptionText is not null)
         {
@@ -105,6 +102,15 @@ public sealed partial class MainWindow : Window
                 LinkType.HardLink => "Direct alias to an existing file on the same drive. Works without administrator permission.",
                 _ => "",
             };
+        }
+
+        if (BrowseSourceFileButton is not null && BrowseSourceFolderButton is not null)
+        {
+            BrowseSourceFileButton.IsEnabled = _selectedType != LinkType.Junction;
+            ToolTipService.SetToolTip(BrowseSourceFileButton, _selectedType == LinkType.Junction ? "Junctions only support folders" : "Choose a file");
+
+            BrowseSourceFolderButton.IsEnabled = _selectedType != LinkType.HardLink;
+            ToolTipService.SetToolTip(BrowseSourceFolderButton, _selectedType == LinkType.HardLink ? "Hard links only support files" : "Choose a folder");
         }
 
         if (CreateButtonText is not null)
@@ -119,15 +125,6 @@ public sealed partial class MainWindow : Window
         StaleMenuBar.IsOpen = _registrar.IsStale;
 
         bool requiresElevation = _service.RequiresElevation(_selectedType);
-        bool admin = Elevation.IsAdministrator;
-
-        ElevationTitle.Text = admin ? "Running as administrator" : "Administrator permission";
-        ElevationDescription.Text = requiresElevation
-            ? "Creating symbolic links requires administrator permission. Windows will show a UAC prompt when creating links."
-            : admin
-                ? "Running as administrator. Links can be created without additional UAC prompts."
-                : "Links of this type can be created without an elevation prompt.";
-
         ShieldIcon.Visibility = (!_busy && requiresElevation) ? Visibility.Visible : Visibility.Collapsed;
     }
 
@@ -242,28 +239,6 @@ public sealed partial class MainWindow : Window
         bool sourceExists = LinkService.PathExists(source);
         bool isDir = sourceExists && Directory.Exists(source);
         bool isFile = sourceExists && File.Exists(source);
-
-        if (JunctionRadio is not null && HardLinkRadio is not null)
-        {
-            _updatingRadioSelection = true;
-            JunctionRadio.IsEnabled = !isFile;
-            HardLinkRadio.IsEnabled = !isDir;
-
-            if (isFile && _selectedType == LinkType.Junction)
-            {
-                _selectedType = LinkType.SymbolicLink;
-                if (LinkTypeRadioButtons is not null)
-                    LinkTypeRadioButtons.SelectedIndex = 0;
-            }
-            else if (isDir && _selectedType == LinkType.HardLink)
-            {
-                _selectedType = LinkType.SymbolicLink;
-                if (LinkTypeRadioButtons is not null)
-                    LinkTypeRadioButtons.SelectedIndex = 0;
-            }
-            _updatingRadioSelection = false;
-            UpdateLinkTypeDescription();
-        }
 
         if (source.Length == 0) error = "Choose a source file or folder.";
         else if (!sourceExists) error = "The source doesn't exist.";
