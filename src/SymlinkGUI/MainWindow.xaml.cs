@@ -32,6 +32,13 @@ public sealed partial class MainWindow : Window
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(AppTitleBar);
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
+
+        var iconPath = System.IO.Path.Combine(AppContext.BaseDirectory, "Assets", "app.ico");
+        if (System.IO.File.Exists(iconPath))
+        {
+            AppWindow.SetIcon(iconPath);
+        }
+
         SizeAndCenter(640, 820);
 
         StatusBar.CloseButtonClick += (_, _) => StatusBar.IsOpen = false;
