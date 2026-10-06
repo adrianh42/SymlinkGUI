@@ -55,10 +55,15 @@ To create a lightweight, portable release folder and compressed `.zip` archive:
 powershell -ExecutionPolicy Bypass -File .\build-portable.ps1
 ```
 
+You can also specify a custom runtime or version explicitly:
+```powershell
+powershell -ExecutionPolicy Bypass -File .\build-portable.ps1 -Runtime win-x64 -Version 1.0.1
+```
+
 ### Outputs
-The build script outputs the artifacts into the `dist/` directory:
-- `dist\SymlinkGUI-Portable-win-x64\` — Portable directory ready to run via `SymlinkGUI.exe`.
-- `dist\SymlinkGUI-Portable-win-x64.zip` — Compressed portable package (~9.7 MB).
+The build script outputs the artifacts into the `dist/` directory (version number is resolved automatically from `Directory.Build.props` or the `-Version` argument):
+- `dist\SymlinkGUI-Portable-win-x64-1.0.0\` — Portable directory ready to run via `SymlinkGUI.exe`.
+- `dist\SymlinkGUI-Portable-win-x64-1.0.0.zip` — Compressed portable package (~9.7 MB).
 
 > [!NOTE]
 > To keep the download package lightweight, the .NET runtime and Windows App SDK are unbundled. Users running the portable build will need:
