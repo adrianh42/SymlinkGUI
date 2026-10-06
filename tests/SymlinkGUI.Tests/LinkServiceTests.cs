@@ -79,10 +79,107 @@ public class LinkServiceTests
     [Fact]
     public void CreateLink_UnsupportedTypeIsRejected()
     {
+        var customService = new LinkService([new SymbolicLinkCreator()]);
         using var tmp = new TempDir();
         var src = tmp.CreateFile("src.txt");
-        var r = Service.CreateLink(LinkType.Junction, src, tmp.Combine("j"));
+        var r = customService.CreateLink(LinkType.Junction, src, tmp.Combine("j"));
         Assert.False(r.Success);
+        Assert.Equal(LinkError.NotSupportedForSource, r.Error);
+    }
+
+    [Fact]
+    public void CreateLink_CreatesDirectoryJunction()
+    {
+        using var tmp = new TempDir();
+        var src = tmp.CreateDir("srcdir");
+        File.WriteAllText(Path.Combine(src, "inner.txt"), "hello junction");
+        var link = tmp.Combine("junc");
+
+        var r = Service.CreateLink(LinkType.Junction, src, link);
+
+        Assert.True(r.Success, r.Message);
+        Assert.True(Directory.Exists(link));
+        Assert.True(File.Exists(Path.Combine(link, "inner.txt")));
+        Assert.Equal("hello junction", File.ReadAllText(Path.Combine(link, "inner.txt")));
+    }
+
+    [Fact]
+    public void CreateLink_JunctionFailsOnSourceFile()
+    {
+        using var tmp = new TempDir();
+        var src = tmp.CreateFile("file.txt");
+        var r = Service.CreateLink(LinkType.Junction, src, tmp.Combine("junc"));
+        Assert.False(r.Success);
+        Assert.Equal(LinkError.NotSupportedForSource, r.Error);
+    }
+
+    [Fact]
+    public void CreateLink_CreatesHardLink()
+    {
+        using var tmp = new TempDir();
+        var src = tmp.CreateFile("source.txt", "initial");
+        var link = tmp.Combine("hardlink.txt");
+
+        var r = Service.CreateLink(LinkType.HardLink, src, link);
+
+        Assert.True(r.Success, r.Message);
+        Assert.True(File.Exists(link));
+        Assert.Equal("initial", File.ReadAllText(link));
+
+        // Hard links share the same file data:
+        File.WriteAllText(src, "updated");
+        Assert.Equal("updated", File.ReadAllText(link));
+    }
+
+    [Fact]
+    public void CreateLink_HardLinkFailsOnDirectory()
+    {
+        using var tmp = new TempDir();
+        var src = tmp.CreateDir("srcdir");
+        var r = Service.CreateLink(LinkType.HardLink, src, tmp.Combine("link.txt"));
+        Assert.False(r.Success);
+        Assert.Equal(LinkError.NotSupportedForSource, r.Error);
+    }
+
+    [Fact]
+    public void HardLinkCreator_FailsAcrossDrives()
+    {
+        using var tmp = new TempDir();
+        var src = tmp.CreateFile("source.txt");
+        var creator = new HardLinkCreator();
+        var r = creator.Create(src, @"Z:\dummy\link.txt");
+        Assert.Equal(LinkError.NotSameDrive, r.Error);
+    }
+
+    [Fact]
+    public void DropLinks_Junctions_RenamesOnCollision()
+    {
+        using var tmp = new TempDir();
+        var src = tmp.CreateDir("myfolder");
+        var dest = tmp.CreateDir("dest");
+        tmp.CreateDir(Path.Combine("dest", "myfolder"));
+
+        var results = Service.DropLinks(LinkType.Junction, [src], dest);
+        var r = Assert.Single(results);
+        Assert.True(r.Success, r.Message);
+        Assert.Equal(Path.Combine(dest, "myfolder (2)"), r.LinkPath);
+        Assert.True(Directory.Exists(r.LinkPath));
+    }
+
+    [Fact]
+    public void DropLinks_HardLinks_RenamesOnCollision()
+    {
+        using var tmp = new TempDir();
+        var src = tmp.CreateFile("doc.txt", "content");
+        var dest = tmp.CreateDir("dest");
+        tmp.CreateFile(Path.Combine("dest", "doc.txt"), "already there");
+
+        var results = Service.DropLinks(LinkType.HardLink, [src], dest);
+        var r = Assert.Single(results);
+        Assert.True(r.Success, r.Message);
+        Assert.Equal(Path.Combine(dest, "doc (2).txt"), r.LinkPath);
+        Assert.True(File.Exists(r.LinkPath));
+        Assert.Equal("content", File.ReadAllText(r.LinkPath));
     }
 
     [SkippableFact]

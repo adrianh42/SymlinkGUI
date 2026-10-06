@@ -43,8 +43,8 @@ public sealed class ContextMenuRegistrar
 
         foreach (var cls in ItemClasses)
         {
-            WriteVerb(cls, PickVerb, "Pick as Symlink Source", $"{exe} --pick \"%1\"", multiSelect: "Player");
-            WriteVerb(cls, OpenVerb, "Create Symlink To...", $"{exe} --open \"%1\"", multiSelect: "Single");
+            WriteVerb(cls, PickVerb, "Pick as Link Source", $"{exe} --pick \"%1\"", multiSelect: "Player");
+            WriteVerb(cls, OpenVerb, "Create Link To...", $"{exe} --open \"%1\"", multiSelect: "Single");
         }
 
         foreach (var cls in DropTargetClasses)

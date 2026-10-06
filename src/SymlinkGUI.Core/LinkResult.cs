@@ -11,6 +11,7 @@ public enum LinkError
     AccessDenied,
     NotSupportedByFileSystem,
     NotSupportedForSource,
+    NotSameDrive,
     Cancelled,
     Unknown,
 }
@@ -35,6 +36,7 @@ public sealed record LinkResult(string SourcePath, string LinkPath, LinkError Er
         NativeMethods.ERROR_PATH_NOT_FOUND => LinkError.DestinationNotFound,
         NativeMethods.ERROR_FILE_NOT_FOUND => LinkError.SourceNotFound,
         NativeMethods.ERROR_ACCESS_DENIED => LinkError.AccessDenied,
+        NativeMethods.ERROR_NOT_SAME_DEVICE => LinkError.NotSameDrive,
         NativeMethods.ERROR_INVALID_NAME => LinkError.InvalidName,
         NativeMethods.ERROR_INVALID_FUNCTION or NativeMethods.ERROR_NOT_SUPPORTED => LinkError.NotSupportedByFileSystem,
         NativeMethods.ERROR_CANCELLED => LinkError.Cancelled,
@@ -51,8 +53,9 @@ public sealed record LinkResult(string SourcePath, string LinkPath, LinkError Er
         LinkError.InvalidName => "The link name contains invalid characters.",
         LinkError.PrivilegeRequired => "Creating symbolic links requires administrator rights.",
         LinkError.AccessDenied => "Access denied. You may not have permission to write to the destination folder.",
-        LinkError.NotSupportedByFileSystem => "The destination drive's file system does not support symbolic links (e.g. FAT32/exFAT).",
+        LinkError.NotSupportedByFileSystem => "The destination drive's file system does not support this link type (e.g. FAT32/exFAT).",
         LinkError.NotSupportedForSource => "This link type is not supported for the selected source.",
+        LinkError.NotSameDrive => "Hard links cannot span drives. The source and destination must be on the same volume.",
         LinkError.Cancelled => "The operation was cancelled.",
         _ => Win32Code != 0
             ? $"Windows error {Win32Code}: {new System.ComponentModel.Win32Exception(Win32Code).Message}"

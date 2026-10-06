@@ -74,7 +74,7 @@ public static class CommandRouter
         var picked = PickStore.Default.GetPicked();
         if (picked.Count == 0)
         {
-            Show("Nothing has been picked yet.\n\nRight-click a file or folder and choose \"Pick as Symlink Source\" first.",
+            Show("Nothing has been picked yet.\n\nRight-click a file or folder and choose \"Pick as Link Source\" first.",
                 NativeMethods.MB_ICONINFORMATION);
             return 1;
         }

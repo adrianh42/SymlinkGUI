@@ -13,6 +13,7 @@ internal static partial class NativeMethods
     public const int ERROR_FILE_NOT_FOUND = 2;
     public const int ERROR_PATH_NOT_FOUND = 3;
     public const int ERROR_ACCESS_DENIED = 5;
+    public const int ERROR_NOT_SAME_DEVICE = 17;
     public const int ERROR_NOT_SUPPORTED = 50;
     public const int ERROR_INVALID_PARAMETER = 87;
     public const int ERROR_INVALID_NAME = 123;
@@ -21,9 +22,47 @@ internal static partial class NativeMethods
     public const int ERROR_PRIVILEGE_NOT_HELD = 1314;
     public const int ERROR_CANCELLED = 1223;
 
+    public const uint GENERIC_READ = 0x80000000;
+    public const uint GENERIC_WRITE = 0x40000000;
+    public const uint FILE_SHARE_READ = 0x00000001;
+    public const uint FILE_SHARE_WRITE = 0x00000002;
+    public const uint FILE_SHARE_DELETE = 0x00000004;
+    public const uint OPEN_EXISTING = 3;
+    public const uint FILE_FLAG_BACKUP_SEMANTICS = 0x02000000;
+    public const uint FILE_FLAG_OPEN_REPARSE_POINT = 0x00200000;
+
+    public const uint FSCTL_SET_REPARSE_POINT = 0x000900A4;
+    public const uint IO_REPARSE_TAG_MOUNT_POINT = 0xA0000003;
+
     [LibraryImport("kernel32.dll", EntryPoint = "CreateSymbolicLinkW", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
     [return: MarshalAs(UnmanagedType.U1)]
     public static partial bool CreateSymbolicLink(string lpSymlinkFileName, string lpTargetFileName, uint dwFlags);
+
+    [LibraryImport("kernel32.dll", EntryPoint = "CreateHardLinkW", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
+    [return: MarshalAs(UnmanagedType.U1)]
+    public static partial bool CreateHardLink(string lpFileName, string lpExistingFileName, nint lpSecurityAttributes);
+
+    [LibraryImport("kernel32.dll", EntryPoint = "CreateFileW", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
+    public static partial Microsoft.Win32.SafeHandles.SafeFileHandle CreateFile(
+        string lpFileName,
+        uint dwDesiredAccess,
+        uint dwShareMode,
+        nint lpSecurityAttributes,
+        uint dwCreationDisposition,
+        uint dwFlagsAndAttributes,
+        nint hTemplateFile);
+
+    [LibraryImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.U1)]
+    public static partial bool DeviceIoControl(
+        SafeHandle hDevice,
+        uint dwIoControlCode,
+        nint lpInBuffer,
+        uint nInBufferSize,
+        nint lpOutBuffer,
+        uint nOutBufferSize,
+        out uint lpBytesReturned,
+        nint lpOverlapped);
 
     // Shell change notification so Explorer refreshes immediately.
     public const int SHCNE_CREATE = 0x00000002;

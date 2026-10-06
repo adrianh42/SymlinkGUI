@@ -14,7 +14,8 @@ namespace SymlinkGUI;
 
 public sealed partial class MainWindow : Window
 {
-    private const LinkType CurrentType = LinkType.SymbolicLink;
+    private LinkType _selectedType = LinkType.SymbolicLink;
+    private bool _updatingRadioSelection;
 
     private readonly LinkService _service = LinkService.Default;
     private readonly ContextMenuRegistrar _registrar = ContextMenuRegistrar.CreateDefault();
@@ -42,11 +43,12 @@ public sealed partial class MainWindow : Window
                 RefreshEnvironment();
         };
 
+        UpdateLinkTypeDescription();
         RefreshEnvironment();
         Validate();
     }
 
-    /// <summary>Pre-fills the source (used by "Create Symlink To..." from Explorer).</summary>
+    /// <summary>Pre-fills the source (used by "Create Link To..." from Explorer).</summary>
     public void SetSource(string path)
     {
         SourceBox.Text = path;
@@ -76,6 +78,39 @@ public sealed partial class MainWindow : Window
 
     #region Environment (context menu + permissions)
 
+    private void LinkType_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_updatingRadioSelection) return;
+
+        _selectedType = LinkTypeRadioButtons.SelectedIndex switch
+        {
+            1 => LinkType.Junction,
+            2 => LinkType.HardLink,
+            _ => LinkType.SymbolicLink,
+        };
+
+        UpdateLinkTypeDescription();
+        RefreshEnvironment();
+        Validate();
+    }
+
+    private void UpdateLinkTypeDescription()
+    {
+        if (LinkTypeDescriptionText is not null)
+        {
+            LinkTypeDescriptionText.Text = _selectedType switch
+            {
+                LinkType.SymbolicLink => "Points to a file or folder across any drives. Requires administrator permission if not already elevated.",
+                LinkType.Junction => "Points to a local folder. Works without administrator permission.",
+                LinkType.HardLink => "Direct alias to an existing file on the same drive. Works without administrator permission.",
+                _ => "",
+            };
+        }
+
+        if (CreateButtonText is not null)
+            CreateButtonText.Text = $"Create {_selectedType.DisplayName()}";
+    }
+
     private void RefreshEnvironment()
     {
         _updatingToggle = true;
@@ -83,7 +118,7 @@ public sealed partial class MainWindow : Window
         _updatingToggle = false;
         StaleMenuBar.IsOpen = _registrar.IsStale;
 
-        bool requiresElevation = _service.RequiresElevation(CurrentType);
+        bool requiresElevation = _service.RequiresElevation(_selectedType);
         bool admin = Elevation.IsAdministrator;
 
         ElevationTitle.Text = admin ? "Running as administrator" : "Administrator permission";
@@ -91,9 +126,9 @@ public sealed partial class MainWindow : Window
             ? "Creating symbolic links requires administrator permission. Windows will show a UAC prompt when creating links."
             : admin
                 ? "Running as administrator. Links can be created without additional UAC prompts."
-                : "Links can be created without an elevation prompt.";
+                : "Links of this type can be created without an elevation prompt.";
 
-        ShieldIcon.Visibility = requiresElevation ? Visibility.Visible : Visibility.Collapsed;
+        ShieldIcon.Visibility = (!_busy && requiresElevation) ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void ContextMenuToggle_Toggled(object sender, RoutedEventArgs e)
@@ -203,10 +238,43 @@ public sealed partial class MainWindow : Window
         string? error = null;
         string? linkPath = null;
 
-        if (Source.Length == 0) error = "Choose a source file or folder.";
-        else if (!LinkService.PathExists(Source)) error = "The source doesn't exist.";
+        string source = Source;
+        bool sourceExists = LinkService.PathExists(source);
+        bool isDir = sourceExists && Directory.Exists(source);
+        bool isFile = sourceExists && File.Exists(source);
+
+        if (JunctionRadio is not null && HardLinkRadio is not null)
+        {
+            _updatingRadioSelection = true;
+            JunctionRadio.IsEnabled = !isFile;
+            HardLinkRadio.IsEnabled = !isDir;
+
+            if (isFile && _selectedType == LinkType.Junction)
+            {
+                _selectedType = LinkType.SymbolicLink;
+                if (LinkTypeRadioButtons is not null)
+                    LinkTypeRadioButtons.SelectedIndex = 0;
+            }
+            else if (isDir && _selectedType == LinkType.HardLink)
+            {
+                _selectedType = LinkType.SymbolicLink;
+                if (LinkTypeRadioButtons is not null)
+                    LinkTypeRadioButtons.SelectedIndex = 0;
+            }
+            _updatingRadioSelection = false;
+            UpdateLinkTypeDescription();
+        }
+
+        if (source.Length == 0) error = "Choose a source file or folder.";
+        else if (!sourceExists) error = "The source doesn't exist.";
+        else if (_selectedType == LinkType.Junction && isFile) error = "Junctions can only be created for folders.";
+        else if (_selectedType == LinkType.Junction && source.StartsWith(@"\\") && !source.StartsWith(@"\\?\") && !source.StartsWith(@"\\.\"))
+            error = "Junctions cannot point to network shares.";
+        else if (_selectedType == LinkType.HardLink && isDir) error = "Hard links can only be created for files.";
         else if (Destination.Length == 0) error = "Choose a destination folder.";
         else if (!Directory.Exists(Destination)) error = "The destination folder doesn't exist.";
+        else if (_selectedType == LinkType.HardLink && !string.Equals(Path.GetPathRoot(Path.GetFullPath(source)), Path.GetPathRoot(Path.GetFullPath(Destination)), StringComparison.OrdinalIgnoreCase))
+            error = "Hard links must be created on the same drive as the source file.";
         else if (LinkService.ValidateName(LinkName) is { } nameError) error = nameError;
         else
         {
@@ -215,7 +283,7 @@ public sealed partial class MainWindow : Window
                 linkPath = Path.GetFullPath(Path.Combine(Destination, LinkName));
                 if (LinkService.PathExists(linkPath))
                     error = $"\"{LinkName}\" already exists in the destination folder. Choose another name.";
-                else if (string.Equals(linkPath, Path.GetFullPath(Source), StringComparison.OrdinalIgnoreCase))
+                else if (string.Equals(linkPath, Path.GetFullPath(source), StringComparison.OrdinalIgnoreCase))
                     error = "The link can't replace its own source.";
             }
             catch (Exception ex)
@@ -226,7 +294,7 @@ public sealed partial class MainWindow : Window
 
         if (linkPath is not null && error is null)
         {
-            PreviewText.Text = $"{linkPath}  →  {Path.GetFullPath(Source)}";
+            PreviewText.Text = $"{linkPath}  →  {Path.GetFullPath(source)}";
             PreviewText.Visibility = Visibility.Visible;
         }
         else
@@ -312,14 +380,14 @@ public sealed partial class MainWindow : Window
         try
         {
             LinkResult result;
-            if (_service.RequiresElevation(CurrentType))
+            if (_service.RequiresElevation(_selectedType))
             {
-                int code = await Elevation.RunElevatedAndWaitAsync(["--create", CurrentType.ToToken(), source, linkPath]);
+                int code = await Elevation.RunElevatedAndWaitAsync(["--create", _selectedType.ToToken(), source, linkPath]);
                 result = CommandRouter.DecodeExitCode(code, source, linkPath);
             }
             else
             {
-                result = await Task.Run(() => _service.CreateLink(CurrentType, source, linkPath));
+                result = await Task.Run(() => _service.CreateLink(_selectedType, source, linkPath));
             }
 
             ShowResult(result);
@@ -342,7 +410,7 @@ public sealed partial class MainWindow : Window
             _lastCreatedLink = result.LinkPath;
             var open = new Button { Content = "Show in Explorer" };
             open.Click += (_, _) => ShowInExplorer(_lastCreatedLink);
-            ShowStatus(InfoBarSeverity.Success, "Symbolic link created", result.LinkPath, open);
+            ShowStatus(InfoBarSeverity.Success, $"{_selectedType.DisplayName()} created", result.LinkPath, open);
 
             // Ready for the next link: keep the destination, clear the source.
             _nameEditedByUser = false;
@@ -371,7 +439,7 @@ public sealed partial class MainWindow : Window
         CreateButton.IsEnabled = !busy;
         CreateProgress.IsActive = busy;
         CreateProgress.Visibility = busy ? Visibility.Visible : Visibility.Collapsed;
-        ShieldIcon.Visibility = !busy && _service.RequiresElevation(CurrentType) ? Visibility.Visible : Visibility.Collapsed;
+        ShieldIcon.Visibility = !busy && _service.RequiresElevation(_selectedType) ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void ShowStatus(InfoBarSeverity severity, string title, string message, ButtonBase? action = null)

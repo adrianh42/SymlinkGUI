@@ -26,7 +26,7 @@
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <StackPanel MaxWidth="760" Padding="24,4,24,24" Spacing="12">
 
-                <TextBlock Text="Create a symbolic link" Style="{StaticResource TitleTextBlockStyle}" Margin="0,0,0,4" />
+                <TextBlock Text="Create a link" Style="{StaticResource TitleTextBlockStyle}" Margin="0,0,0,4" />
 
                 <!-- Source -->
                 <Border x:Name="SourceCard" Style="{StaticResource CardStyle}" AllowDrop="True"
@@ -87,6 +87,19 @@
                     </StackPanel>
                 </Border>
 
+                <!-- Link Type -->
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Link type" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                        <RadioButtons x:Name="LinkTypeRadioButtons" SelectionChanged="LinkType_SelectionChanged" SelectedIndex="0">
+                            <RadioButton x:Name="SymlinkRadio" Content="Symbolic Link" />
+                            <RadioButton x:Name="JunctionRadio" Content="Directory Junction" />
+                            <RadioButton x:Name="HardLinkRadio" Content="Hard Link" />
+                        </RadioButtons>
+                        <TextBlock x:Name="LinkTypeDescriptionText" Style="{StaticResource CardDescriptionStyle}" />
+                    </StackPanel>
+                </Border>
+
                 <!-- Name -->
                 <Border Style="{StaticResource CardStyle}">
                     <StackPanel Spacing="8">
@@ -113,7 +126,7 @@
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <FontIcon x:Name="ShieldIcon" Glyph="&#xEA18;" FontSize="14" Visibility="Collapsed" />
                             <ProgressRing x:Name="CreateProgress" Width="14" Height="14" IsActive="False" Visibility="Collapsed" />
-                            <TextBlock Text="Create Symlink" />
+                            <TextBlock x:Name="CreateButtonText" Text="Create Symbolic Link" />
                         </StackPanel>
                     </Button>
                 </Grid>
@@ -132,7 +145,7 @@
                         <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
                             <TextBlock Text="Show in File Explorer context menu" />
                             <TextBlock Style="{StaticResource CardDescriptionStyle}"
-                                       Text="Adds &quot;Pick as Symlink Source&quot;, &quot;Drop Symbolic Link Here&quot; and &quot;Create Symlink To...&quot;. On Windows 11, find them under &quot;Show more options&quot;." />
+                                       Text="Adds &quot;Pick as Link Source&quot;, &quot;Drop Link Here&quot; and &quot;Create Link To...&quot;. On Windows 11, find them under &quot;Show more options&quot;." />
                         </StackPanel>
                         <ToggleSwitch x:Name="ContextMenuToggle" Grid.Column="2" OnContent="On" OffContent="Off"
                                       MinWidth="0" Toggled="ContextMenuToggle_Toggled" />

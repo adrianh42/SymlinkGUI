@@ -128,6 +128,24 @@ public sealed class ContextMenuRegistrarTests : IDisposable
     }
 
     [Fact]
+    public void InstallWithAllTypesCreatesSubmenu()
+    {
+        var reg = new ContextMenuRegistrar(Exe, LinkService.Default.SupportedTypes, Registry.CurrentUser, Classes);
+        reg.Install();
+
+        using var pickKey = Registry.CurrentUser.OpenSubKey($@"{Classes}\*\shell\SymlinkGUI.Pick");
+        Assert.Equal("Pick as Link Source", pickKey?.GetValue("MUIVerb"));
+
+        using var openKey = Registry.CurrentUser.OpenSubKey($@"{Classes}\*\shell\SymlinkGUI.Open");
+        Assert.Equal("Create Link To...", openKey?.GetValue("MUIVerb"));
+
+        Assert.Null(ReadCommand(@"Directory\Background\shell\SymlinkGUI.Drop"));
+        Assert.Equal($"\"{Exe}\" --drop symlink \"%V\"", ReadCommand(@"Directory\Background\shell\SymlinkGUI.Drop\shell\01_symlink"));
+        Assert.Equal($"\"{Exe}\" --drop junction \"%V\"", ReadCommand(@"Directory\Background\shell\SymlinkGUI.Drop\shell\02_junction"));
+        Assert.Equal($"\"{Exe}\" --drop hardlink \"%V\"", ReadCommand(@"Directory\Background\shell\SymlinkGUI.Drop\shell\03_hardlink"));
+    }
+
+    [Fact]
     public void UninstallRemovesOnlyOurVerbs()
     {
         using (var other = Registry.CurrentUser.CreateSubKey($@"{Classes}\*\shell\SomeoneElse"))

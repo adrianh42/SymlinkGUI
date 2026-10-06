@@ -9,7 +9,11 @@ public sealed class LinkService
     private readonly Dictionary<LinkType, ILinkCreator> _creators;
 
     /// <summary>The link types enabled in this build. Add new creators here.</summary>
-    public static LinkService Default { get; } = new([new SymbolicLinkCreator()]);
+    public static LinkService Default { get; } = new([
+        new SymbolicLinkCreator(),
+        new JunctionCreator(),
+        new HardLinkCreator(),
+    ]);
 
     public LinkService(IEnumerable<ILinkCreator> creators)
     {
