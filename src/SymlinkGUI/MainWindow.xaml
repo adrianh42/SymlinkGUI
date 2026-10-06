@@ -40,7 +40,7 @@
                             <TextBlock x:Name="LinkTypeDescriptionText" Style="{StaticResource CardDescriptionStyle}" />
                         </StackPanel>
                         <ComboBox x:Name="LinkTypeCombo" Grid.Column="1" MinWidth="180" VerticalAlignment="Center"
-                                  SelectedIndex="0" SelectionChanged="LinkTypeCombo_SelectionChanged">
+                                  SelectionChanged="LinkTypeCombo_SelectionChanged">
                             <ComboBoxItem Content="Symbolic Link" />
                             <ComboBoxItem Content="Directory Junction" />
                             <ComboBoxItem Content="Hard Link" />

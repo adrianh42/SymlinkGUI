@@ -19,6 +19,7 @@ public sealed partial class MainWindow : Window
     private readonly LinkService _service = LinkService.Default;
     private readonly ContextMenuRegistrar _registrar = ContextMenuRegistrar.CreateDefault();
 
+    private bool _initialized;
     private bool _nameEditedByUser;
     private bool _settingNameProgrammatically;
     private bool _updatingToggle;
@@ -41,6 +42,9 @@ public sealed partial class MainWindow : Window
             if (e.WindowActivationState != WindowActivationState.Deactivated)
                 RefreshEnvironment();
         };
+
+        LinkTypeCombo.SelectedIndex = 0;
+        _initialized = true;
 
         UpdateLinkTypeControls();
         RefreshEnvironment();
@@ -79,6 +83,8 @@ public sealed partial class MainWindow : Window
 
     private void LinkTypeCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        if (!_initialized) return;
+
         _selectedType = LinkTypeCombo.SelectedIndex switch
         {
             1 => LinkType.Junction,
@@ -119,6 +125,8 @@ public sealed partial class MainWindow : Window
 
     private void RefreshEnvironment()
     {
+        if (!_initialized) return;
+
         _updatingToggle = true;
         ContextMenuToggle.IsOn = _registrar.IsInstalled;
         _updatingToggle = false;
@@ -155,6 +163,7 @@ public sealed partial class MainWindow : Window
 
     private void SourceBox_TextChanged(object sender, TextChangedEventArgs e)
     {
+        if (!_initialized) return;
         string source = SourceBox.Text.Trim().Trim('"');
         UpdateSourceInfo(source);
 
@@ -169,12 +178,17 @@ public sealed partial class MainWindow : Window
 
     private void NameBox_TextChanged(object sender, TextChangedEventArgs e)
     {
+        if (!_initialized) return;
         if (!_settingNameProgrammatically)
             _nameEditedByUser = NameBox.Text.Length > 0;
         Validate();
     }
 
-    private void Input_TextChanged(object sender, TextChangedEventArgs e) => Validate();
+    private void Input_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (!_initialized) return;
+        Validate();
+    }
 
     private static string DefaultLinkName(string source)
     {
@@ -232,6 +246,8 @@ public sealed partial class MainWindow : Window
     /// <summary>Validates inputs; returns the full link path when everything is valid.</summary>
     private string? Validate()
     {
+        if (!_initialized) return null;
+
         string? error = null;
         string? linkPath = null;
 
