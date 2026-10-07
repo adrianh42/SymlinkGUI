@@ -113,7 +113,17 @@ public sealed class ContextMenuRegistrarTests : IDisposable
         Assert.Equal($"\"{Exe}\" --pick \"%1\"", ReadCommand(@"Directory\shell\SymlinkGUI.Pick"));
         Assert.Equal($"\"{Exe}\" --open \"%1\"", ReadCommand(@"*\shell\SymlinkGUI.Open"));
         Assert.Equal($"\"{Exe}\" --drop symlink \"%V\"", ReadCommand(@"Directory\Background\shell\SymlinkGUI.Drop"));
+        Assert.Equal($"\"{Exe}\" --drop symlink \"%V\"", ReadCommand(@"DesktopBackground\shell\SymlinkGUI.Drop"));
         Assert.Equal($"\"{Exe}\" --drop symlink \"%1\"", ReadCommand(@"Directory\shell\SymlinkGUI.Drop"));
+
+        using var bgKey = Registry.CurrentUser.OpenSubKey($@"{Classes}\Directory\Background\shell\SymlinkGUI.Drop");
+        Assert.Null(bgKey?.GetValue("MultiSelectModel"));
+
+        using var dtBgKey = Registry.CurrentUser.OpenSubKey($@"{Classes}\DesktopBackground\shell\SymlinkGUI.Drop");
+        Assert.Null(dtBgKey?.GetValue("MultiSelectModel"));
+
+        using var dirKey = Registry.CurrentUser.OpenSubKey($@"{Classes}\Directory\shell\SymlinkGUI.Drop");
+        Assert.Equal("Single", dirKey?.GetValue("MultiSelectModel"));
     }
 
     [Fact]
@@ -125,6 +135,8 @@ public sealed class ContextMenuRegistrarTests : IDisposable
         Assert.Null(ReadCommand(@"Directory\Background\shell\SymlinkGUI.Drop"));
         Assert.Equal($"\"{Exe}\" --drop symlink \"%V\"", ReadCommand(@"Directory\Background\shell\SymlinkGUI.Drop\shell\01_symlink"));
         Assert.Equal($"\"{Exe}\" --drop junction \"%V\"", ReadCommand(@"Directory\Background\shell\SymlinkGUI.Drop\shell\02_junction"));
+        Assert.Equal($"\"{Exe}\" --drop symlink \"%V\"", ReadCommand(@"DesktopBackground\shell\SymlinkGUI.Drop\shell\01_symlink"));
+        Assert.Equal($"\"{Exe}\" --drop junction \"%V\"", ReadCommand(@"DesktopBackground\shell\SymlinkGUI.Drop\shell\02_junction"));
     }
 
     [Fact]
@@ -143,6 +155,18 @@ public sealed class ContextMenuRegistrarTests : IDisposable
         Assert.Equal($"\"{Exe}\" --drop symlink \"%V\"", ReadCommand(@"Directory\Background\shell\SymlinkGUI.Drop\shell\01_symlink"));
         Assert.Equal($"\"{Exe}\" --drop junction \"%V\"", ReadCommand(@"Directory\Background\shell\SymlinkGUI.Drop\shell\02_junction"));
         Assert.Equal($"\"{Exe}\" --drop hardlink \"%V\"", ReadCommand(@"Directory\Background\shell\SymlinkGUI.Drop\shell\03_hardlink"));
+        Assert.Equal($"\"{Exe}\" --drop symlink \"%V\"", ReadCommand(@"DesktopBackground\shell\SymlinkGUI.Drop\shell\01_symlink"));
+        Assert.Equal($"\"{Exe}\" --drop junction \"%V\"", ReadCommand(@"DesktopBackground\shell\SymlinkGUI.Drop\shell\02_junction"));
+        Assert.Equal($"\"{Exe}\" --drop hardlink \"%V\"", ReadCommand(@"DesktopBackground\shell\SymlinkGUI.Drop\shell\03_hardlink"));
+
+        using var bgDropKey = Registry.CurrentUser.OpenSubKey($@"{Classes}\Directory\Background\shell\SymlinkGUI.Drop");
+        Assert.Null(bgDropKey?.GetValue("MultiSelectModel"));
+
+        using var dtDropKey = Registry.CurrentUser.OpenSubKey($@"{Classes}\DesktopBackground\shell\SymlinkGUI.Drop");
+        Assert.Null(dtDropKey?.GetValue("MultiSelectModel"));
+
+        using var dirDropKey = Registry.CurrentUser.OpenSubKey($@"{Classes}\Directory\shell\SymlinkGUI.Drop");
+        Assert.Equal("Single", dirDropKey?.GetValue("MultiSelectModel"));
     }
 
     [Fact]
@@ -158,6 +182,9 @@ public sealed class ContextMenuRegistrarTests : IDisposable
         Assert.False(reg.IsInstalled);
         using var shell = Registry.CurrentUser.OpenSubKey($@"{Classes}\*\shell")!;
         Assert.Equal(["SomeoneElse"], shell.GetSubKeyNames());
+
+        using var dtShell = Registry.CurrentUser.OpenSubKey($@"{Classes}\DesktopBackground\shell");
+        Assert.True(dtShell is null || dtShell.SubKeyCount == 0);
     }
 
     [Fact]

@@ -16,7 +16,7 @@ public sealed class ContextMenuRegistrar
     // Class keys we touch. Kept in one place so uninstall removes everything install created.
     private static readonly string[] ItemClasses = [@"*", @"Directory"];
     private static readonly string[] DropTargetClasses = [@"Directory", @"Drive"];
-    private const string BackgroundClass = @"Directory\Background";
+    private static readonly string[] BackgroundClasses = [@"Directory\Background", @"DesktopBackground"];
 
     private readonly string _exePath;
     private readonly IReadOnlyList<LinkType> _types;
@@ -48,8 +48,9 @@ public sealed class ContextMenuRegistrar
         }
 
         foreach (var cls in DropTargetClasses)
-            WriteDropVerb(cls, exe, "%1");
-        WriteDropVerb(BackgroundClass, exe, "%V");
+            WriteDropVerb(cls, exe, "%1", isBackground: false);
+        foreach (var cls in BackgroundClasses)
+            WriteDropVerb(cls, exe, "%V", isBackground: true);
 
         NotifyShell();
     }
@@ -58,7 +59,7 @@ public sealed class ContextMenuRegistrar
 
     private void Uninstall(bool notify)
     {
-        foreach (var cls in ItemClasses.Concat(DropTargetClasses).Append(BackgroundClass).Distinct())
+        foreach (var cls in ItemClasses.Concat(DropTargetClasses).Concat(BackgroundClasses).Distinct())
         {
             using var shell = _root.OpenSubKey($@"{_classesPath}\{cls}\shell", writable: true);
             if (shell is null) continue;
@@ -72,7 +73,7 @@ public sealed class ContextMenuRegistrar
     {
         get
         {
-            using var key = _root.OpenSubKey($@"{_classesPath}\{BackgroundClass}\shell\{DropVerb}");
+            using var key = _root.OpenSubKey($@"{_classesPath}\Directory\Background\shell\{DropVerb}");
             return key is not null;
         }
     }
@@ -93,12 +94,12 @@ public sealed class ContextMenuRegistrar
     public bool IsStale => IsInstalled &&
         !string.Equals(RegisteredExecutablePath, _exePath, StringComparison.OrdinalIgnoreCase);
 
-    private void WriteDropVerb(string cls, string exe, string placeholder)
+    private void WriteDropVerb(string cls, string exe, string placeholder, bool isBackground)
     {
         if (_types.Count == 1)
         {
             var type = _types[0];
-            WriteVerb(cls, DropVerb, $"Drop {type.DisplayName()} Here", $"{exe} --drop {type.ToToken()} \"{placeholder}\"", multiSelect: "Single");
+            WriteVerb(cls, DropVerb, $"Drop {type.DisplayName()} Here", $"{exe} --drop {type.ToToken()} \"{placeholder}\"", multiSelect: isBackground ? null : "Single");
             return;
         }
 
@@ -106,7 +107,8 @@ public sealed class ContextMenuRegistrar
         using var verb = _root.CreateSubKey($@"{_classesPath}\{cls}\shell\{DropVerb}");
         verb.SetValue("MUIVerb", "Drop Link Here");
         verb.SetValue("SubCommands", "");
-        verb.SetValue("MultiSelectModel", "Single");
+        if (!isBackground)
+            verb.SetValue("MultiSelectModel", "Single");
         SetIcon(verb);
         for (int i = 0; i < _types.Count; i++)
         {
@@ -118,11 +120,12 @@ public sealed class ContextMenuRegistrar
         }
     }
 
-    private void WriteVerb(string cls, string verbName, string text, string command, string multiSelect)
+    private void WriteVerb(string cls, string verbName, string text, string command, string? multiSelect)
     {
         using var verb = _root.CreateSubKey($@"{_classesPath}\{cls}\shell\{verbName}");
         verb.SetValue("MUIVerb", text);
-        verb.SetValue("MultiSelectModel", multiSelect);
+        if (multiSelect is not null)
+            verb.SetValue("MultiSelectModel", multiSelect);
         SetIcon(verb);
         using var cmd = verb.CreateSubKey("command");
         cmd.SetValue(null, command);
