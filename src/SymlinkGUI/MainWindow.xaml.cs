@@ -34,7 +34,7 @@ public sealed partial class MainWindow : Window
         SetTitleBar(AppTitleBar);
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
         SetAppIcon();
-        SizeAndCenter(640, 650);
+        SizeAndCenter(600, 650);
 
         StatusBar.CloseButtonClick += (_, _) => StatusBar.IsOpen = false;
         Activated += (_, e) =>
@@ -113,9 +113,9 @@ public sealed partial class MainWindow : Window
         {
             LinkTypeDescriptionText.Text = _selectedType switch
             {
-                LinkType.SymbolicLink => "Points to a file or folder across any drives. Requires administrator permission if not already elevated.",
-                LinkType.Junction => "Points to a local folder. Works without administrator permission.",
-                LinkType.HardLink => "Direct alias to an existing file on the same drive. Works without administrator permission.",
+                LinkType.SymbolicLink => "Points to a file or folder across any drives. Requires administrator permission.",
+                LinkType.Junction => "Points to a local folder.",
+                LinkType.HardLink => "Direct alias to an existing file on the same drive.",
                 _ => "",
             };
         }
