@@ -34,7 +34,7 @@ public sealed partial class MainWindow : Window
         SetTitleBar(AppTitleBar);
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
         SetAppIcon();
-        SizeAndCenter(640, 640);
+        SizeAndCenter(640, 650);
 
         StatusBar.CloseButtonClick += (_, _) => StatusBar.IsOpen = false;
         Activated += (_, e) =>
