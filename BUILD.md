@@ -69,3 +69,32 @@ The build script outputs the artifacts into the `dist/` directory (version numbe
 > To keep the download package lightweight, the .NET runtime and Windows App SDK are unbundled. Users running the portable build will need:
 > - [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/)
 > - [Windows App SDK Runtime](https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/downloads)
+
+---
+
+## 5. Versioning & Releases
+
+The project follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PATCH`).
+
+The single source of truth for the version is [`Directory.Build.props`](./Directory.Build.props).
+
+### Version Bump Script
+Use `scripts/bump-version.ps1` to increment or set the version before building or releasing:
+
+```powershell
+# Bump patch version (bug fixes, tweaks, chores): e.g. 1.2.0 -> 1.2.1
+powershell -ExecutionPolicy Bypass -File .\scripts\bump-version.ps1 -Type patch
+
+# Bump minor version (new features, backwards-compatible additions): e.g. 1.2.0 -> 1.3.0
+powershell -ExecutionPolicy Bypass -File .\scripts\bump-version.ps1 -Type minor
+
+# Bump major version (breaking architectural changes): e.g. 1.2.0 -> 2.0.0
+powershell -ExecutionPolicy Bypass -File .\scripts\bump-version.ps1 -Type major
+
+# Set an explicit version
+powershell -ExecutionPolicy Bypass -File .\scripts\bump-version.ps1 -Set 1.3.0
+
+# Bump patch and create git commit & tag in one step
+powershell -ExecutionPolicy Bypass -File .\scripts\bump-version.ps1 -Type patch -Commit -Tag
+```
+

@@ -485,3 +485,6 @@ $RECYCLE.BIN/
 
 # Local utility scripts
 scripts/generate-icon.ps1
+
+# AI agent instructions
+AGENTS.md
