@@ -33,6 +33,7 @@ public sealed partial class MainWindow : Window
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(AppTitleBar);
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
+        SetAppIcon();
         SizeAndCenter(640, 720);
 
         StatusBar.CloseButtonClick += (_, _) => StatusBar.IsOpen = false;
@@ -75,6 +76,15 @@ public sealed partial class MainWindow : Window
             area.X + (area.Width - size.Width) / 2,
             area.Y + (area.Height - size.Height) / 2,
             size.Width, size.Height));
+    }
+
+    private void SetAppIcon()
+    {
+        string iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "app.ico");
+        if (File.Exists(iconPath))
+        {
+            AppWindow.SetIcon(iconPath);
+        }
     }
 
     #endregion

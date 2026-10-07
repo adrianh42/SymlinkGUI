@@ -19,7 +19,16 @@
 
     <!-- We provide our own Main (Program.cs) so context-menu verbs can run without starting XAML. -->
     <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+
+    <!-- Application Icon -->
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 
   <!-- Default to x64 when building without an explicit platform (e.g. plain `dotnet build`). -->
   <PropertyGroup Condition="'$(Platform)' == '' Or '$(Platform)' == 'AnyCPU'">
