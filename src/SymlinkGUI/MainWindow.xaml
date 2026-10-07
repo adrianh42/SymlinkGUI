@@ -26,7 +26,52 @@
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <StackPanel MaxWidth="760" Padding="24,4,24,24" Spacing="12">
 
-                <TextBlock Text="Create a link" Style="{StaticResource TitleTextBlockStyle}" Margin="0,0,0,4" />
+                <Grid Margin="0,0,0,4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Create a link" Style="{StaticResource TitleTextBlockStyle}" VerticalAlignment="Center" />
+
+                    <DropDownButton x:Name="ExplorerIntegrationDropDown" Grid.Column="1" VerticalAlignment="Center">
+                        <DropDownButton.Content>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon Glyph="&#xE8DE;" FontSize="14" />
+                                <TextBlock Text="Explorer integration" />
+                                <InfoBadge x:Name="StaleMenuBadge" Style="{StaticResource AttentionDotInfoBadgeStyle}" Visibility="Collapsed" />
+                            </StackPanel>
+                        </DropDownButton.Content>
+                        <DropDownButton.Flyout>
+                            <Flyout Placement="BottomEdgeAlignedRight">
+                                <StackPanel Width="360" Spacing="12">
+                                    <Grid ColumnSpacing="12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Spacing="2" VerticalAlignment="Center">
+                                            <TextBlock Text="File Explorer menu" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                            <TextBlock Text="Add quick actions to context menu" Style="{StaticResource CardDescriptionStyle}" />
+                                        </StackPanel>
+                                        <ToggleSwitch x:Name="ContextMenuToggle" Grid.Column="1"
+                                                      OnContent="On" OffContent="Off"
+                                                      MinWidth="0" Margin="0" VerticalAlignment="Center"
+                                                      Toggled="ContextMenuToggle_Toggled" />
+                                    </Grid>
+                                    <TextBlock Style="{StaticResource CardDescriptionStyle}"
+                                               Text="Adds &quot;Pick as Link Source&quot;, &quot;Drop Link Here&quot; and &quot;Create Link To...&quot;. On Windows 11, find them under &quot;Show more options&quot;." />
+                                    <InfoBar x:Name="StaleMenuBar" IsOpen="False" IsClosable="False" Severity="Warning"
+                                             Title="Points to another location"
+                                             Message="The context menu was registered from a different copy of this app.">
+                                        <InfoBar.ActionButton>
+                                            <Button Content="Repair" Click="RepairMenu_Click" />
+                                        </InfoBar.ActionButton>
+                                    </InfoBar>
+                                </StackPanel>
+                            </Flyout>
+                        </DropDownButton.Flyout>
+                    </DropDownButton>
+                </Grid>
 
                 <!-- Link Type -->
                 <Border Style="{StaticResource CardStyle}">
@@ -137,35 +182,6 @@
                         </StackPanel>
                     </Button>
                 </Grid>
-
-                <!-- Settings -->
-                <TextBlock Text="Explorer integration" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="0,16,0,0" />
-
-                <Border Style="{StaticResource CardStyle}">
-                    <Grid ColumnSpacing="16">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <FontIcon Glyph="&#xE8DE;" FontSize="20" VerticalAlignment="Center" />
-                        <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Text="Show in File Explorer context menu" />
-                            <TextBlock Style="{StaticResource CardDescriptionStyle}"
-                                       Text="Adds &quot;Pick as Link Source&quot;, &quot;Drop Link Here&quot; and &quot;Create Link To...&quot;. On Windows 11, find them under &quot;Show more options&quot;." />
-                        </StackPanel>
-                        <ToggleSwitch x:Name="ContextMenuToggle" Grid.Column="2" OnContent="On" OffContent="Off"
-                                      MinWidth="0" Toggled="ContextMenuToggle_Toggled" />
-                    </Grid>
-                </Border>
-
-                <InfoBar x:Name="StaleMenuBar" IsOpen="False" IsClosable="False" Severity="Warning"
-                         Title="Context menu points to another location"
-                         Message="The menu entries were registered from a different copy of this app (it may have been moved).">
-                    <InfoBar.ActionButton>
-                        <Button Content="Repair" Click="RepairMenu_Click" />
-                    </InfoBar.ActionButton>
-                </InfoBar>
             </StackPanel>
         </ScrollViewer>
     </Grid>

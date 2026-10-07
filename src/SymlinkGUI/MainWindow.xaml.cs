@@ -34,7 +34,7 @@ public sealed partial class MainWindow : Window
         SetTitleBar(AppTitleBar);
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
         SetAppIcon();
-        SizeAndCenter(640, 720);
+        SizeAndCenter(640, 640);
 
         StatusBar.CloseButtonClick += (_, _) => StatusBar.IsOpen = false;
         Activated += (_, e) =>
@@ -141,6 +141,17 @@ public sealed partial class MainWindow : Window
         ContextMenuToggle.IsOn = _registrar.IsInstalled;
         _updatingToggle = false;
         StaleMenuBar.IsOpen = _registrar.IsStale;
+
+        if (StaleMenuBadge is not null)
+            StaleMenuBadge.Visibility = _registrar.IsStale ? Visibility.Visible : Visibility.Collapsed;
+
+        if (ExplorerIntegrationDropDown is not null)
+        {
+            ToolTipService.SetToolTip(ExplorerIntegrationDropDown,
+                _registrar.IsStale
+                    ? "Context menu points to another location (repair needed)"
+                    : "File Explorer integration settings");
+        }
 
         bool requiresElevation = _service.RequiresElevation(_selectedType);
         ShieldIcon.Visibility = (!_busy && requiresElevation) ? Visibility.Visible : Visibility.Collapsed;
